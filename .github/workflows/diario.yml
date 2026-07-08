@@ -1,0 +1,35 @@
+name: Sincronizacion diaria Edifica
+
+on:
+  schedule:
+    - cron: "0 6 * * *"    # 06:00 UTC = 3am Uruguay
+  workflow_dispatch:        # boton para dispararlo a mano
+
+permissions:
+  contents: write
+
+jobs:
+  sincronizar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar el repositorio
+        uses: actions/checkout@v4
+
+      - name: Instalar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar librerias
+        run: pip install -r requirements.txt
+
+      - name: Generar el mega-CSV
+        run: python combinar.py
+
+      - name: Guardar el CSV en el repositorio
+        run: |
+          git config user.name "edifica-bot"
+          git config user.email "bot@edifica.uy"
+          git add edifica_todos.csv respaldos/*.csv
+          git commit -m "Actualizacion automatica $(date -u +'%Y-%m-%d %H:%M UTC')" || echo "Sin cambios"
+          git push
