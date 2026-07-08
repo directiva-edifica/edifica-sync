@@ -1,7 +1,8 @@
 """
 Fuente: URUIMPORTA (WooCommerce Store API, sin clave)
-Lee ~9000 productos, convierte UYU->USD al dolar venta del dia,
-mapea las categorias finas a las 8 categorias madre de Edifica.
+Lee ~9000 productos, convierte UYU->USD al dolar COMPRA del dia (el mas bajo,
+para obtener mas dolares por peso), suma 19% de margen, y excluye Electro.
+Mapea las categorias finas a las 8 categorias madre de Edifica.
 """
 import requests, re, html
 from fuentes.unificar import unificar
@@ -10,6 +11,7 @@ NOMBRE = "uruimporta"
 API = "https://uruimporta.com.uy/wp-json/wc/store/v1/products"
 DOLAR_API = "https://uy.dolarapi.com/v1/cotizaciones"
 HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; EdificaBot/1.0)"}
+MARGEN = 1.19  # 19% extra sobre el precio de Uruimporta
 
 MADRE = {
     "Herramientas Manuales": "Herramientas", "Herramientas Eléctricas": "Herramientas",
@@ -93,15 +95,16 @@ def _clean(t):
     return html.unescape(t or "").strip()
 
 
-def dolar_venta():
+def dolar_compra():
+    # Dolar COMPRA (el mas bajo) para obtener mas dolares por peso
     try:
         r = requests.get(DOLAR_API, headers=HEADERS, timeout=15)
         for c in r.json():
             if c.get("moneda") == "USD":
-                return float(c["venta"])
+                return float(c["compra"])
     except Exception:
         pass
-    return 41.4
+    return 39.0
 
 
 def clasificar(cat_nombre):
@@ -121,7 +124,7 @@ COLS = ["Handle", "Title", "Body HTML", "Vendor", "Type", "Tags", "Published",
 
 
 def obtener():
-    dolar = dolar_venta()
+    dolar = dolar_compra()
     productos = []
     page = 1
     while True:
@@ -141,8 +144,16 @@ def obtener():
         raise RuntimeError("Uruimporta: API sin productos")
 
     def usd(precio_uyu):
+        # Convierte pesos a USD (dolar compra) y aplica el margen 19%
         try:
-            return f"{round(float(precio_uyu) / dolar, 2)}"
+            return f"{round((float(precio_uyu) / dolar) * MARGEN, 2)}"
+        except Exception:
+            return ""
+
+    def usd_directo(precio_usd):
+        # Si ya viene en USD, solo aplica el margen 19%
+        try:
+            return f"{round(float(precio_usd) * MARGEN, 2)}"
         except Exception:
             return ""
 
@@ -155,8 +166,8 @@ def obtener():
         regular_raw = pr.get("regular_price", precio_raw)
 
         if cur == "USD":
-            precio = f"{float(precio_raw):.2f}"
-            regular = f"{float(regular_raw):.2f}"
+            precio = usd_directo(precio_raw)
+            regular = usd_directo(regular_raw)
         else:
             precio = usd(precio_raw)
             regular = usd(regular_raw)
