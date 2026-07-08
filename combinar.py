@@ -11,8 +11,8 @@ import csv, os, sys, importlib
 # crear fuentes/nombre.py con una funcion obtener() y agregarla aca.
 FUENTES = [
     "joacamar",
+    "uruimporta",
 ]
-
 COLS = ["Handle", "Title", "Body HTML", "Vendor", "Type", "Tags", "Published",
         "Option1 Name", "Option1 Value", "Variant SKU", "Variant Price",
         "Variant Compare At Price", "Variant Inventory Qty",
