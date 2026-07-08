@@ -4,7 +4,7 @@ Lee ~9000 productos, convierte UYU->USD al dolar venta del dia,
 mapea las categorias finas a las 8 categorias madre de Edifica.
 """
 import requests, re, html
-from unificar import unificar
+from fuentes.unificar import unificar
 
 NOMBRE = "uruimporta"
 API = "https://uruimporta.com.uy/wp-json/wc/store/v1/products"
