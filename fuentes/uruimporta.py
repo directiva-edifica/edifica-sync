@@ -179,4 +179,21 @@ def obtener():
             "Option1 Name": "Título", "Option1 Value": "Default Title",
             "Variant SKU": sku, "Variant Price": precio,
             "Variant Compare At Price": regular if oferta else "",
-            "Variant Inventory Qty": "10" if
+            "Variant Inventory Qty": "10" if p.get("is_in_stock") else "0",
+            "Variant Inventory Policy": "deny",
+        })
+        if imgs:
+            fila["Image Src"] = imgs[0]
+            fila["Image Position"] = "1"
+        filas.append(fila)
+
+        for pos, url in enumerate(imgs[1:], 2):
+            filas.append({**{c: "" for c in COLS}, "Handle": h,
+                          "Image Src": url, "Image Position": str(pos)})
+
+    return filas, len(productos)
+
+
+if __name__ == "__main__":
+    filas, n = obtener()
+    print(f"Uruimporta: {n} productos, {len(filas)} filas")
