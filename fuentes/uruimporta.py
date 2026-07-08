@@ -164,6 +164,10 @@ def obtener():
         cats = p.get("categories", [])
         cat_nombre = _clean(cats[0]["name"]) if cats else ""
         madre, sub = clasificar(cat_nombre)
+
+        if madre == "Electro":
+            continue  # Uruimporta: no cargamos electro (lo cubre Joacamar)
+
         sub = unificar(sub)
 
         title = _clean(p.get("name"))
