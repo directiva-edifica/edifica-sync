@@ -32,4 +32,5 @@ jobs:
           git config user.email "bot@edifica.uy"
           git add edifica_todos.csv respaldos/*.csv
           git commit -m "Actualizacion automatica $(date -u +'%Y-%m-%d %H:%M UTC')" || echo "Sin cambios"
+          git pull --rebase --autostash
           git push
