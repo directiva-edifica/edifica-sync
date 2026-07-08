@@ -4,6 +4,7 @@ Lee ~9000 productos, convierte UYU->USD al dolar venta del dia,
 mapea las categorias finas a las 8 categorias madre de Edifica.
 """
 import requests, re, html
+from unificar import unificar
 
 NOMBRE = "uruimporta"
 API = "https://uruimporta.com.uy/wp-json/wc/store/v1/products"
@@ -163,6 +164,7 @@ def obtener():
         cats = p.get("categories", [])
         cat_nombre = _clean(cats[0]["name"]) if cats else ""
         madre, sub = clasificar(cat_nombre)
+        sub = unificar(sub)
 
         title = _clean(p.get("name"))
         body = p.get("description") or ""
