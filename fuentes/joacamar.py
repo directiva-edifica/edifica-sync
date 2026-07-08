@@ -5,6 +5,7 @@ baja las descripciones reales de cada ficha y devuelve filas Matrixify.
 """
 
 import requests, re
+from unificar import unificar
 import xml.etree.ElementTree as ET
 from collections import OrderedDict
 from concurrent.futures import ThreadPoolExecutor
@@ -130,6 +131,7 @@ def obtener():
     for pcode, variantes in productos.items():
         v0 = variantes[0]
         madre, sub = clasificar(_g(v0, "productType"), _g(v0, "brand"))
+        sub = unificar(sub)
         tags = ", ".join([t for t in [sub, _g(v0, "brand")] if t])
         title = _g(v0, "productName") or _g(v0, "name")
         h = _handle(pcode)
