@@ -2,7 +2,7 @@ name: Sincronizacion diaria Edifica
 
 on:
   schedule:
-    - cron: "0 6 * * *"    # 06:00 UTC = 3am Uruguay
+    - cron: "50 11 * * *"   # PRUEBA: 8:50 Uruguay
   workflow_dispatch:        # boton para dispararlo a mano
 
 permissions:
