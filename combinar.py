@@ -8,6 +8,7 @@ FUENTES = [
     "joacamar",
     "uruimporta",
     "midea",
+    "miuruguay",
 ]
 
 COLS = ["Handle","Title","Body HTML","Vendor","Type","Tags","Published",
