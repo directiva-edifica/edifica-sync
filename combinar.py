@@ -11,6 +11,7 @@ FUENTES = [
     "miuruguay",
     "consul",
     "ltienda",
+    "vstore",
 ]
 
 COLS = ["Handle","Title","Body HTML","Vendor","Type","Tags","Published",
