@@ -13,6 +13,7 @@ FUENTES = [
     "ltienda",
     "vstore",
     "fymelco",
+    "enko",
 ]
 
 COLS = ["Handle","Title","Body HTML","Vendor","Type","Tags","Published",
