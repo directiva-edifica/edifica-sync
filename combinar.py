@@ -9,6 +9,7 @@ FUENTES = [
     "uruimporta",
     "midea",
     "miuruguay",
+    "consul",
 ]
 
 COLS = ["Handle","Title","Body HTML","Vendor","Type","Tags","Published",
