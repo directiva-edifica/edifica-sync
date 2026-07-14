@@ -14,6 +14,16 @@ MIN_USD = 400  # solo se publican productos de 400 USD o mas
 
 def _clean(t): return html.unescape(t or "").strip()
 
+def limpiar_desc(desc):
+    """Quita shortcodes de WPBakery [vc_row] etc que Shopify no entiende."""
+    if not desc: return ""
+    import re as _re
+    d = _re.sub(r'\[/?vc_[^\]]*\]', '', desc)      # shortcodes vc_*
+    d = _re.sub(r'\[/?[a-z_]+[^\]]*\]', '', d)       # otros shortcodes
+    d = _re.sub(r'<p>\s*</p>', '', d)                  # parrafos vacios
+    d = _re.sub(r'\n\s*\n\s*\n+', '\n\n', d)      # saltos multiples
+    return d.strip()
+
 def dolar_compra():
     try:
         r = requests.get(DOLAR_API, headers=HEADERS, timeout=15)
@@ -92,7 +102,7 @@ def obtener():
         madre, sub = clasificar(title)
         sub = unificar(sub)
         m = marca(title)
-        body = p.get("description") or ""
+        body = limpiar_desc(p.get("description") or "")
         h = _handle(sku, p.get("slug"))
         oferta = p.get("on_sale", False)
         hay_stock = p.get("is_in_stock")
