@@ -14,6 +14,7 @@ FUENTES = [
     "vstore",
     "fymelco",
     "enko",
+    "iluminica",
 ]
 
 COLS = ["Handle","Title","Body HTML","Vendor","Type","Tags","Published",
