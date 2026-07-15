@@ -15,6 +15,7 @@ FUENTES = [
     "fymelco",
     "enko",
     "iluminica",
+    "gelbring",
 ]
 
 COLS = ["Handle","Title","Body HTML","Vendor","Type","Tags","Published",
