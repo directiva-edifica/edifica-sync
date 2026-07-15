@@ -160,6 +160,45 @@ COLS = ["Handle","Title","Body HTML","Vendor","Type","Tags","Published",
         "Variant Compare At Price","Variant Inventory Qty",
         "Variant Inventory Policy","Image Src","Image Position"]
 
+def _traer_web():
+    """Intenta la API. Gelbring suele bloquear IPs de servidor (403)."""
+    productos = []
+    page = 1
+    try:
+        while True:
+            r = requests.get(API, headers=HEADERS,
+                             params={"per_page": 100, "page": page}, timeout=45)
+            if r.status_code != 200:
+                if page == 1:
+                    print(f"  gelbring: la web respondio HTTP {r.status_code}")
+                break
+            d = r.json()
+            if not d: break
+            productos.extend(d); page += 1
+            if page > 40: break
+            time.sleep(0.5)
+    except Exception as e:
+        print(f"  gelbring: fallo la web ({str(e)[:60]})")
+    return productos
+
+def _leer_snapshot():
+    """Foto del catalogo guardada en listas/gelbring_web.json."""
+    path = os.path.join(LISTAS_DIR, "gelbring_web.json")
+    if not os.path.isfile(path): return []
+    import json
+    with open(path, encoding="utf-8") as f:
+        datos = json.load(f)
+    # adaptar al formato de la API
+    return [{
+        "name": d.get("name", ""),
+        "sku": d.get("sku", ""),
+        "slug": d.get("slug", ""),
+        "description": d.get("description", ""),
+        "categories": [{"name": c} for c in d.get("categories", [])],
+        "images": [{"src": u} for u in d.get("images", [])],
+        "is_in_stock": d.get("is_in_stock", True),
+    } for d in datos]
+
 def obtener():
     precios = cargar_listas()
     if not precios:
@@ -167,29 +206,13 @@ def obtener():
     pdf_norm = {_norm(c): (c, p) for c, p in precios.items()}
     codigos = sorted(pdf_norm.keys(), key=len, reverse=True)
 
-    productos = []
-    page = 1
-    ultimo_status = None
-    while True:
-        r = None
-        for intento in range(3):
-            r = requests.get(API, headers=HEADERS,
-                             params={"per_page": 100, "page": page}, timeout=60)
-            ultimo_status = r.status_code
-            if r.status_code == 200: break
-            time.sleep(5 * (intento + 1))  # 5s, 10s
-        if r is None or r.status_code != 200:
-            break
-        try:
-            d = r.json()
-        except Exception:
-            break
-        if not d: break
-        productos.extend(d); page += 1
-        if page > 40: break
-        time.sleep(0.5)
+    productos = _traer_web()
     if not productos:
-        raise RuntimeError(f"Gelbring: API sin productos (ultimo status HTTP {ultimo_status})")
+        productos = _leer_snapshot()
+        if productos:
+            print(f"  gelbring: la web bloqueo el acceso, se usa la foto local ({len(productos)} productos)")
+    if not productos:
+        raise RuntimeError("Gelbring: ni la web ni la foto local (listas/gelbring_web.json) dieron productos")
 
     filas = []
     publicados = 0
