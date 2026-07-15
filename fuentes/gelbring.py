@@ -7,13 +7,19 @@ Precio usado: columna "PVP Min Sugerido" (en USD). Sin margen.
 Los productos sin precio en las listas NO se publican.
 Esta fuente NO lleva el tag stock-verificado.
 """
-import requests, re, html, os, glob
+import requests, re, html, os, glob, time
 from collections import defaultdict
 from fuentes.unificar import unificar
 
 NOMBRE = "gelbring"
 API = "https://gelbring.com.uy/wp-json/wc/store/v1/products"
-HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; EdificaBot/1.0)"}
+HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+                  "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "Accept": "application/json, text/plain, */*",
+    "Accept-Language": "es-UY,es;q=0.9",
+    "Referer": "https://gelbring.com.uy/",
+}
 LISTAS_DIR = "listas"
 
 # ---------- LECTURA DE LISTAS ----------
@@ -163,15 +169,27 @@ def obtener():
 
     productos = []
     page = 1
+    ultimo_status = None
     while True:
-        r = requests.get(API, headers=HEADERS, params={"per_page":100,"page":page}, timeout=90)
-        if r.status_code != 200: break
-        d = r.json()
+        r = None
+        for intento in range(3):
+            r = requests.get(API, headers=HEADERS,
+                             params={"per_page": 100, "page": page}, timeout=60)
+            ultimo_status = r.status_code
+            if r.status_code == 200: break
+            time.sleep(5 * (intento + 1))  # 5s, 10s
+        if r is None or r.status_code != 200:
+            break
+        try:
+            d = r.json()
+        except Exception:
+            break
         if not d: break
         productos.extend(d); page += 1
         if page > 40: break
+        time.sleep(0.5)
     if not productos:
-        raise RuntimeError("Gelbring: API sin productos")
+        raise RuntimeError(f"Gelbring: API sin productos (ultimo status HTTP {ultimo_status})")
 
     filas = []
     publicados = 0
