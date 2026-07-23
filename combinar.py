@@ -15,7 +15,7 @@ import csv, os, sys, importlib
 
 FUENTES = [
     "joacamar", "uruimporta", "midea", "miuruguay", "consul",
-    "ltienda", "vstore", "fymelco", "enko", "iluminica", "gelbring",
+    "ltienda", "vstore", "fymelco", "enko", "iluminica", "gelbring", "beko",
 ]
 
 COLS = ["Handle","Title","Body HTML","Vendor","Type","Tags","Published",
