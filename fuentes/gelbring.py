@@ -6,6 +6,11 @@ que aparece en el nombre del producto web.
 Precio usado: columna "PVP Min Sugerido" (en USD). Sin margen.
 Los productos sin precio en las listas NO se publican.
 Esta fuente NO lleva el tag stock-verificado.
+
+Descripcion: la API de WooCommerce trae el campo "description" vacio
+en este sitio; la ficha tecnica real esta en "short_description". Se
+usa description si existe, y si no, short_description, y si tampoco
+hay eso, el titulo (ultimo recurso).
 """
 import requests, re, html, os, glob, time
 from collections import defaultdict
@@ -21,6 +26,8 @@ HEADERS = {
     "Referer": "https://gelbring.com.uy/",
 }
 LISTAS_DIR = "listas"
+REINTENTOS_API = 3
+ESPERA_ENTRE_REINTENTOS = 5  # segundos
 
 # ---------- LECTURA DE LISTAS ----------
 
@@ -155,31 +162,61 @@ def _handle(sku, slug):
     base = slug or sku
     return "gb-" + re.sub(r'[^a-z0-9]+', '-', base.lower()).strip('-')
 
+def _descripcion_de(p):
+    """
+    Devuelve la mejor descripcion disponible del producto.
+    En este sitio, "description" suele venir vacio y la ficha tecnica
+    real esta en "short_description". Se prueba en ese orden, y como
+    ultimo recurso se usa el titulo.
+    """
+    desc = (p.get("description") or "").strip()
+    if desc:
+        return desc
+    short = (p.get("short_description") or "").strip()
+    if short:
+        return short
+    return html.unescape(p.get("name", "") or "").strip()
+
 COLS = ["Handle","Title","Body HTML","Vendor","Type","Tags","Published",
         "Option1 Name","Option1 Value","Variant SKU","Variant Price",
         "Variant Compare At Price","Variant Inventory Qty",
         "Variant Inventory Policy","Image Src","Image Position"]
 
 def _traer_web():
-    """Intenta la API. Gelbring suele bloquear IPs de servidor (403)."""
-    productos = []
-    page = 1
-    try:
-        while True:
-            r = requests.get(API, headers=HEADERS,
-                             params={"per_page": 100, "page": page}, timeout=45)
-            if r.status_code != 200:
-                if page == 1:
-                    print(f"  gelbring: la web respondio HTTP {r.status_code}")
-                break
-            d = r.json()
-            if not d: break
-            productos.extend(d); page += 1
-            if page > 40: break
-            time.sleep(0.5)
-    except Exception as e:
-        print(f"  gelbring: fallo la web ({str(e)[:60]})")
-    return productos
+    """
+    Intenta la API con reintentos (Gelbring a veces bloquea de forma
+    intermitente, no siempre). Si despues de varios intentos no responde,
+    se cae al respaldo local.
+    """
+    for intento in range(1, REINTENTOS_API + 1):
+        productos = []
+        page = 1
+        try:
+            while True:
+                r = requests.get(API, headers=HEADERS,
+                                 params={"per_page": 100, "page": page}, timeout=45)
+                if r.status_code != 200:
+                    if page == 1:
+                        print(f"  gelbring: intento {intento}/{REINTENTOS_API} - "
+                              f"la web respondio HTTP {r.status_code}")
+                    break
+                d = r.json()
+                if not d: break
+                productos.extend(d); page += 1
+                if page > 40: break
+                time.sleep(0.5)
+        except Exception as e:
+            print(f"  gelbring: intento {intento}/{REINTENTOS_API} - fallo la web ({str(e)[:60]})")
+
+        if productos:
+            if intento > 1:
+                print(f"  gelbring: la web respondio bien en el intento {intento}")
+            return productos
+
+        if intento < REINTENTOS_API:
+            time.sleep(ESPERA_ENTRE_REINTENTOS)
+
+    return []
 
 def _leer_snapshot():
     """Foto del catalogo guardada en listas/gelbring_web.json."""
@@ -194,6 +231,7 @@ def _leer_snapshot():
         "sku": d.get("sku", ""),
         "slug": d.get("slug", ""),
         "description": d.get("description", ""),
+        "short_description": d.get("short_description", ""),
         "categories": [{"name": c} for c in d.get("categories", [])],
         "images": [{"src": u} for u in d.get("images", [])],
         "is_in_stock": d.get("is_in_stock", True),
@@ -227,39 +265,3 @@ def obtener():
                 hit = pdf_norm[cn]; break
         if not hit:
             sin_precio += 1
-            continue
-        codigo, precio = hit
-
-        cats = ", ".join(c["name"] for c in p.get("categories", []))
-        madre, sub = clasificar(title, cats)
-        sub = unificar(sub)
-        marca = marca_de(title)
-        h = _handle(codigo, p.get("slug"))
-        body = p.get("description") or title
-        imgs = [im.get("src") for im in p.get("images", []) if im.get("src")]
-        hay_stock = p.get("is_in_stock")
-
-        # SIN tag stock-verificado en esta fuente
-        tg = ", ".join([t for t in [sub, marca] if t])
-        fila = {c: "" for c in COLS}
-        fila.update({
-            "Handle": h, "Title": title, "Body HTML": body, "Vendor": marca,
-            "Type": madre, "Tags": tg, "Published": "TRUE",
-            "Option1 Name": "Título", "Option1 Value": "Default Title",
-            "Variant SKU": codigo, "Variant Price": f"{round(precio,2)}",
-            "Variant Compare At Price": "",
-            "Variant Inventory Qty": "10" if hay_stock else "0",
-            "Variant Inventory Policy": "deny",
-        })
-        if imgs: fila["Image Src"] = imgs[0]; fila["Image Position"] = "1"
-        filas.append(fila); publicados += 1
-        for pos, url in enumerate(imgs[1:], 2):
-            filas.append({**{c: "" for c in COLS}, "Handle": h,
-                          "Image Src": url, "Image Position": str(pos)})
-
-    print(f"  gelbring: {publicados} con precio, {sin_precio} sin precio (no se publican)")
-    return filas, publicados
-
-if __name__ == "__main__":
-    filas, n = obtener()
-    print(f"Gelbring: {n} productos, {len(filas)} filas")
