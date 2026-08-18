@@ -31,6 +31,7 @@ from datetime import datetime, timezone
 FUENTES = [
     "joacamar", "uruimporta", "midea", "miuruguay", "consul",
     "ltienda", "vstore", "fymelco", "enko", "iluminica", "beko", "vivion", "mvdindustrial",
+    "diaril",
 ]
 
 COLS = ["Handle","Title","Body HTML","Vendor","Type","Tags","Published",
