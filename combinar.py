@@ -31,7 +31,7 @@ from datetime import datetime, timezone
 FUENTES = [
     "joacamar", "uruimporta", "midea", "miuruguay", "consul",
     "ltienda", "vstore", "fymelco", "enko", "iluminica", "beko", "vivion", "mvdindustrial",
-    "diaril",
+    "diaril", "diego",
 ]
 
 COLS = ["Handle","Title","Body HTML","Vendor","Type","Tags","Published",
@@ -168,7 +168,13 @@ def main():
                 raise RuntimeError("sin filas")
 
             # --- conversion USD -> UYU, apenas se obtienen los datos crudos ---
-            filas = convertir_precios_a_pesos(filas, cotizacion)
+            # Una fuente puede declarar MONEDA = "UYU" si ya publica en pesos
+            # (ej: Diego). En ese caso NO se convierte: multiplicarla por la
+            # cotizacion dejaria los precios 39 veces mas caros.
+            if getattr(mod, "MONEDA", "USD").upper() == "UYU":
+                print(f"  ({nombre} ya publica en pesos: no se convierte moneda)")
+            else:
+                filas = convertir_precios_a_pesos(filas, cotizacion)
 
             handles_hoy = handles_de(filas)
 
