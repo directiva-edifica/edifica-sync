@@ -21,7 +21,7 @@ from fuentes.unificar import unificar
 
 NOMBRE = "diego"
 MONEDA = "UYU"          # <-- evita la conversion de moneda en combinar.py
-MARGEN = 0.50           # 50% sobre el precio publicado por Diego
+MARGEN = 0.65           # 65% sobre el precio publicado por Diego
 HILOS = 10
 
 SITEMAP = "https://www.diego.com.uy/sitemap.xml"
