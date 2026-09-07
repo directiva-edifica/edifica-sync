@@ -11,7 +11,7 @@ API = "https://uruimporta.com.uy/wp-json/wc/store/v1/products"
 BRANDS_API = "https://uruimporta.com.uy/wp-json/wc/store/v1/products/brands"
 DOLAR_API = "https://uy.dolarapi.com/v1/cotizaciones"
 HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; EdificaBot/1.0)"}
-MARGEN = 1.19
+MARGEN = 1.65
 
 MADRE = {
     "Herramientas Manuales":"Herramientas","Herramientas Eléctricas":"Herramientas",
