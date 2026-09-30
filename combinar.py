@@ -31,11 +31,12 @@ from datetime import datetime, timezone
 FUENTES = [
     "joacamar", "uruimporta", "midea", "miuruguay", "consul",
     "ltienda", "vstore", "fymelco", "enko", "iluminica", "beko", "vivion", "mvdindustrial",
-    "diaril", "diego",
+    "diaril", "diego", "biomassa",
 ]
 
 COLS = ["Handle","Title","Body HTML","Vendor","Type","Tags","Published",
-        "Option1 Name","Option1 Value","Variant SKU","Variant Price",
+        "Option1 Name","Option1 Value","Option2 Name","Option2 Value",
+        "Option3 Name","Option3 Value","Variant SKU","Variant Price",
         "Variant Compare At Price","Variant Inventory Qty",
         "Variant Inventory Policy","Image Src","Image Position",
         "Status","Command"]
