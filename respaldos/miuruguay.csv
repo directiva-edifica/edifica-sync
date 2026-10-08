@@ -223,9 +223,6 @@ Protocolo Wi-Fi: 802.11a/b/g/n/ac<br />
 Compatible con Wi-Fi de 2,4 GHz | Wi-Fi de 5 GHz<br />
 Compatible con Wi-Fi Direct<br />
 Bluetooth 5.1</p>
-<h2>NFC</h2>
-<p>Sí</p>
-<p>*La disponibilidad de NFC puede variar según el mercado.</p>
 <h2>Características de IA</h2>
 <p>AI Erase Pro, AI Sky, Expansión de imagen AI</p>
 <p>*La función AI Erase Pro está disponible vía OTA.</p>
@@ -415,8 +412,6 @@ Google Gemini</p>
 <h2>Seguridad y autenticación</h2>
 <p>Sensor de huellas dactilares en pantalla<br />
 Desbloqueo facial con AI</p>
-<h2>NFC</h2>
-<p>Sí</p>
 <h2>Red y conectividad</h2>
 <p>Doble SIM (nano SIM + nano SIM o nano SIM + eSIM, eSIM + eSIM)*</p>
 <p>*El uso de eSIM requiere un plan de servicio inalámbrico. Este plan puede estar sujeto a ciertas restricciones de uso al cambiar de proveedor de servicios y en itinerancia (incluso después de la finalización del contrato). La disponibilidad de eSIM puede variar según el país o la región y el operador. Para más detalles, ponte en contacto con tu operador para obtener más información.</p>
@@ -605,9 +600,7 @@ Protocolo Wi-Fi: Wi-Fi 7/ Wi-Fi 6/ Wi-Fi 5/ Wi-Fi 4 y 802.11a/b/g</p>
 <p>Frecuencia WLAN: 2,4 G Wi-Fi | 5 G Wi-Fi<br />
 Compatible con Multi-Link Operation, 2&#215;2 MIMO, 8&#215;8 Sounding para MU-MIMO, Wi-Fi Direct, Miracast<br />
 Bluetooth 6.0, Dual-Bluetooth<br />
-Compatible con SBC / AAC / LDAC / LHDC 5.0 / LC3 / ASHA / Auracast<br />
-NFC</p>
-<p>*Las funciones pueden variar en algunos mercados.</p>
+Compatible con SBC / AAC / LDAC / LHDC 5.0 / LC3 / ASHA / Auracast</p>
 <h2>Navegación y localización</h2>
 <p>Beidou: B1I+B1C+B2a+B2b | GPS: L1+L5 | Galileo: E1+E5a+E5b | GLONASS: G1 | QZSS: L1+L5 | NavIC: L1+L5<br />
 AGNSS | red de datos | red inalámbrica | posicionamiento asistido por sensor</p>
@@ -768,9 +761,7 @@ Protocolo Wi-Fi: Wi-Fi 6/ Wi-Fi 5/ Wi-Fi 4 y 802.11a/b/g</p>
 <p>Frecuencia WLAN: 2,4G Wi-Fi | 5G Wi-Fi<br />
 Compatible con 2&#215;2 MIMO, 8&#215;8 Sounding para MU-MIMO, Wi-Fi Direct, Miracast<br />
 Bluetooth 6.0<br />
-Compatible con SBC / AAC / LDAC / LHDC 5.0 / LC3 / ASHA / Auracast<br />
-NFC</p>
-<p>*Las funciones pueden variar en algunos mercados.</p>
+Compatible con SBC / AAC / LDAC / LHDC 5.0 / LC3 / ASHA / Auracast</p>
 <h2>Navegación y localización</h2>
 <p>Beidou: B1I+B1C+B2a | GPS: L1+L5 | Galileo: E1+E5a | GLONASS: G1 | QZSS: L1+L5 | NavIC: L5<br />
 AGNSS | red de datos | red inalámbrica | posicionamiento asistido por sensor</p>
@@ -1723,8 +1714,6 @@ Operación Multi-Link<br />
 Compatible con 2&#215;2 MIMO, 8&#215;8 Sounding para MU-MIMO, Wi-Fi Direct, Miracast, doble banda simultánea<br />
 Bluetooth 6.0, Dual-Bluetooth<br />
 Compatible con SBC/AAC/AptX/AptX HD/AptX Adaptive/LDAC/LHDC 5.0/LC3/MIHC</p>
-<h2>NFC</h2>
-<p>Sí</p>
 <h2>Navegación y posicionamiento</h2>
 <p>GPS: L1+L5 | Galileo: E1+E5a | GLONASS: G1 | BeiDou | QZSS: L1 + L5 | NavIC: L5<br />
 Posicionamiento suplementario A-GPS | brújula electrónica | red inalámbrica | red de datos | SAP</p>
@@ -2022,9 +2011,6 @@ La conectividad Wi-Fi (incluyendo las bandas de frecuencia Wi-Fi, los estándare
 <p>IP66, IP68<br />
 *Probado y certificado para resistir salpicaduras, agua y polvo en condiciones de laboratorio específicas con la protección IP66/IP68 basada en IEC 60529:1989+A1:1999+A2:2013. Las condiciones de prueba de resistencia al agua incluyen: Para IP68: sumersión en agua dulce estática hasta una profundidad de 2 m, durante un máximo de 30 minutos, con una diferencia de temperatura entre el agua y el producto de 5 K o menos. La protección contra ingreso no está garantizada si el producto se expone a entornos más allá de las condiciones de prueba. No se recomienda probarlo por cuenta propia. No se aconseja su uso en la playa o la piscina. La garantía no cubrirá daños por líquidos causados en entornos que excedan las condiciones de prueba.<br />
 La protección contra ingreso puede deteriorarse debido al desgaste diario y/o daños físicos o desensamblaje. Consulte el manual de usuario para obtener instrucciones completas.</p>
-<h2>NFC</h2>
-<p>NFC Sí<br />
-*La disponibilidad de NFC puede variar según el mercado.</p>
 <h2>Navegación y posicionamiento</h2>
 <p>GPS: L1 | GLONASS: G1 | BDS: B1I | Galileo E1 | QZSS: L1 | A-GPS supplementary positioning | red inalámbrica | red de datos | posicionamiento asistido por sensor</p>
 <h2>Audio</h2>
@@ -3049,7 +3035,7 @@ Peso neto: 4,2 kg<br />
 Dimensiones del producto:<br />
 340 x 124 x 226 mm<br />
 Capacidad del compartimento de polvo:<br />
-Aprox. 0,6 l</p>",Xiaomi,Electro,"Aspiradoras, Xiaomi, stock-verificado",TRUE,Título,Default Title,,,,,57805,18238.00,,10,deny,https://miuruguay.com.uy/wp-content/uploads/2025/02/xiaomiVacuumCleanerG20Max-00.jpg,1,,
+Aprox. 0,6 l</p>",Xiaomi,Electro,"Aspiradoras, Xiaomi",TRUE,Título,Default Title,,,,,57805,18238.00,,0,deny,https://miuruguay.com.uy/wp-content/uploads/2025/02/xiaomiVacuumCleanerG20Max-00.jpg,1,,
 mu-xiaomi-vacuum-cleaner-g20-max,,,,,,,,,,,,,,,,,,https://miuruguay.com.uy/wp-content/uploads/2025/02/xiaomiVacuumCleanerG20Max-000.jpg,2,,
 mu-xiaomi-electric-scooter-5-max,Scooter Eléctrico Xiaomi 5 Max,"<p><strong data-start=""4"" data-end=""54"">Características </strong></p>
 <p><strong data-start=""63"" data-end=""93"">Sistema de Suspensión Dual</strong></p>
@@ -3433,7 +3419,6 @@ Admite HyperCharge a 67 W</p>
 <ul>
 <li><strong>Red:</strong> Doble SIM (nano SIM + nano SIM), 5G, Wi-Fi 7</li>
 <li><strong>Bluetooth:</strong> 5.4</li>
-<li><strong>NFC:</strong> Sí</li>
 </ul>
 <h3>Seguridad</h3>
 <ul>
@@ -3687,8 +3672,6 @@ USB-C 3.2 Gen 2</p>
 <h2>Seguridad</h2>
 <p>Sensor de huellas digitales en pantalla<br />
 Desbloqueo facial por IA</p>
-<h2>NFC</h2>
-<p>Sí</p>
 <h2>Red y conectividad</h2>
 <p>SIM doble (nano SIM + nano SIM)<br />
 *La tarjeta SIM dual puede variar en función de la disponibilidad de la región.</p>
