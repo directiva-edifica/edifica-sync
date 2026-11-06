@@ -84,12 +84,22 @@ def obtener():
         pr = p.get("prices", {})
         precio_raw = pr.get("price", "0")
         regular_raw = pr.get("regular_price", precio_raw)
+        # La Store API devuelve el precio en la unidad MINIMA de la moneda:
+        # "295245" con currency_minor_unit=2 son USD 2.952,45, no 295.245.
+        # Sin esta division los precios salen 100 veces mas caros.
+        escala = 10 ** int(pr.get("currency_minor_unit", 0) or 0)
         try:
-            precio = f"{round(float(precio_raw),2)}"
-            regular = f"{round(float(regular_raw),2)}"
+            precio = f"{round(float(precio_raw) / escala, 2)}"
+            regular = f"{round(float(regular_raw) / escala, 2)}"
         except Exception:
             continue
         if precio in ("0","0.0","1","1.0"): continue
+        # Guardia: ningun articulo de Fymelco supera los USD 20.000.
+        # Si aparece uno, algo cambio en la API y es mejor no publicarlo
+        # que publicar un precio de millones de pesos.
+        if float(precio) > 20000:
+            print(f"  fymelco: PRECIO SOSPECHOSO, no se publica -> {title[:50]} (USD {precio})")
+            continue
 
         short = _limpiar(p.get("short_description"))
         desc_raw = p.get("description") or ""
