@@ -5,7 +5,7 @@ Precios en USD (sin margen). Todo el catalogo.
 Marcas: TEKA, Tramontina, Köök (detectadas de la descripcion).
 Piletas/fregaderos -> Hogar.
 """
-import requests, re, html
+import requests, re, html, time
 from fuentes.unificar import unificar
 
 NOMBRE = "fymelco"
@@ -62,18 +62,52 @@ COLS = ["Handle","Title","Body HTML","Vendor","Type","Tags","Published",
         "Variant Compare At Price","Variant Inventory Qty",
         "Variant Inventory Policy","Image Src","Image Position"]
 
+def _traer_pagina(page):
+    """Pide una pagina del catalogo. Reintenta con esperas crecientes porque
+    el servidor de Fymelco a veces responde con una pagina de espera en lugar
+    del JSON. Devuelve la lista de productos, o None si no se pudo."""
+    espera = 5
+    for intento in range(1, 6):
+        try:
+            r = requests.get(API, headers=HEADERS,
+                             params={"per_page": 100, "page": page}, timeout=90)
+        except Exception as e:
+            print(f"  fymelco: pagina {page}, intento {intento}: error de red ({str(e)[:50]})")
+            time.sleep(espera); espera = min(espera * 2, 60)
+            continue
+        if r.status_code == 200 and r.text.lstrip().startswith("["):
+            try:
+                return r.json()
+            except Exception:
+                pass
+        print(f"  fymelco: pagina {page}, intento {intento}: respuesta no valida "
+              f"(HTTP {r.status_code})")
+        time.sleep(espera); espera = min(espera * 2, 60)
+    return None
+
+
 def obtener():
     productos = []
     page = 1
     while True:
-        r = requests.get(API, headers=HEADERS, params={"per_page":100,"page":page}, timeout=90)
-        if r.status_code != 200: break
-        d = r.json()
-        if not d: break
-        productos.extend(d); page += 1
+        d = _traer_pagina(page)
+        if d is None:
+            # No se pudo leer esta pagina. Si ya habia productos, el catalogo
+            # quedaria INCOMPLETO y combinar.py podria dar de baja productos
+            # que si existen. Es preferible fallar y usar el respaldo del dia
+            # anterior, que publicar medio catalogo.
+            raise RuntimeError(
+                f"Fymelco: no se pudo leer la pagina {page} tras 5 intentos "
+                f"({len(productos)} productos leidos hasta ahi; se usa el respaldo)")
+        if not d:
+            break
+        productos.extend(d)
+        page += 1
         if page > 30: break
+        time.sleep(1)
     if not productos:
         raise RuntimeError("Fymelco: API sin productos")
+    print(f"  fymelco: {len(productos)} productos leidos de la web")
 
     filas = []
     publicados = 0
