@@ -47,6 +47,7 @@ import time
 import urllib.parse
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
 
 import requests
 
@@ -61,6 +62,7 @@ BASE = "https://www.diego.com.uy"
 ROBOTS = BASE + "/robots.txt"
 CACHE_CSV = "cache/diego.csv"
 CACHE_META = "cache/diego_meta.json"
+ZONA = ZoneInfo("America/Montevideo")
 
 # Nos identificamos de verdad. No imitamos un Chrome: si Diego alguna vez
 # quiere limitarnos, tiene un nombre concreto para poner en su robots.txt.
@@ -278,6 +280,24 @@ def _filas_desde_fichas(fichas):
 # ----------------------------------------------------------------------
 # cache y git
 # ----------------------------------------------------------------------
+def ya_corrio_hoy():
+    """True si el cache se escribio hoy (hora de Montevideo).
+
+    Con esto launchd puede disparar el script varias veces al dia sin que
+    haga trabajo de mas: la primera corrida que sale bien marca el dia y
+    las siguientes no hacen nada. Si la Mac estuvo dormida toda la manana,
+    la de la tarde si encuentra el dia sin marcar y lee el catalogo."""
+    try:
+        with open(CACHE_META, encoding="utf-8") as f:
+            fecha = json.load(f).get("fecha")
+        d = datetime.fromisoformat(fecha)
+        if d.tzinfo is None:
+            d = d.replace(tzinfo=timezone.utc)
+        return d.astimezone(ZONA).date() == datetime.now(ZONA).date()
+    except Exception:
+        return False
+
+
 def escribir_cache(filas, publicados):
     os.makedirs("cache", exist_ok=True)
     with open(CACHE_CSV, "w", newline="", encoding="utf-8") as f:
@@ -332,10 +352,18 @@ def main():
                     help="commitea y sube cache/diego.csv al repo")
     ap.add_argument("--limite", type=int, default=0,
                     help="leer solo N fichas (para probar)")
+    ap.add_argument("--una-vez-por-dia", action="store_true",
+                    help="no hacer nada si el cache ya se escribio hoy "
+                         "(es lo que usa launchd)")
     args = ap.parse_args()
 
     global _demora
-    print("Diego - lectura local\n")
+    sello = datetime.now(ZONA).strftime("%Y-%m-%d %H:%M")
+    print(f"Diego - lectura local - {sello}\n")
+
+    if args.una_vez_por_dia and ya_corrio_hoy():
+        print("  El cache ya se escribio hoy. No hay nada que hacer.")
+        return
 
     permitido, demora, motivo = permiso_robots()
     print(f"  robots.txt: {motivo}")
@@ -390,25 +418,39 @@ if __name__ == "__main__":
 
 
 # ----------------------------------------------------------------------
-# PARA QUE CORRA SOLO TODAS LAS MANANAS (macOS)
+# PARA QUE CORRA SOLO (macOS, launchd)
 # ----------------------------------------------------------------------
-# Guardar esto como ~/Library/LaunchAgents/uy.edifica.diego.plist y
-# despues: launchctl load ~/Library/LaunchAgents/uy.edifica.diego.plist
+# Se dispara a las 8, 9, 10, 11 y 19. Gracias a --una-vez-por-dia, la
+# primera que sale bien marca el dia y las demas no hacen nada; la de las
+# 19 solo lee el catalogo si ninguna de la manana pudo (Mac dormida,
+# apagada o sin red). Si la Mac estaba dormida a la hora de un disparo,
+# launchd lo ejecuta en cuanto despierta.
+#
+# Archivo: ~/Library/LaunchAgents/uy.edifica.diego.plist
+# Cargar:  launchctl load -w ~/Library/LaunchAgents/uy.edifica.diego.plist
+# Ver log: tail -f /tmp/diego_local.log
 #
 # <?xml version="1.0" encoding="UTF-8"?>
 # <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
 #   "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 # <plist version="1.0"><dict>
-#   <key>Label</key>              <string>uy.edifica.diego</string>
-#   <key>WorkingDirectory</key>   <string>/Users/TU_USUARIO/edifica-sync</string>
+#   <key>Label</key>            <string>uy.edifica.diego</string>
+#   <key>WorkingDirectory</key> <string>/Users/TU_USUARIO/edifica-sync</string>
 #   <key>ProgramArguments</key>
 #     <array>
 #       <string>/usr/bin/python3</string>
 #       <string>diego_local.py</string>
 #       <string>--push</string>
+#       <string>--una-vez-por-dia</string>
 #     </array>
 #   <key>StartCalendarInterval</key>
-#     <dict><key>Hour</key><integer>7</integer><key>Minute</key><integer>0</integer></dict>
-#   <key>StandardOutPath</key>    <string>/tmp/diego_local.log</string>
-#   <key>StandardErrorPath</key>  <string>/tmp/diego_local.err</string>
+#     <array>
+#       <dict><key>Hour</key><integer>8</integer><key>Minute</key><integer>10</integer></dict>
+#       <dict><key>Hour</key><integer>9</integer><key>Minute</key><integer>10</integer></dict>
+#       <dict><key>Hour</key><integer>10</integer><key>Minute</key><integer>10</integer></dict>
+#       <dict><key>Hour</key><integer>11</integer><key>Minute</key><integer>10</integer></dict>
+#       <dict><key>Hour</key><integer>19</integer><key>Minute</key><integer>10</integer></dict>
+#     </array>
+#   <key>StandardOutPath</key>  <string>/tmp/diego_local.log</string>
+#   <key>StandardErrorPath</key><string>/tmp/diego_local.log</string>
 # </dict></plist>
