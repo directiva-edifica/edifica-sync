@@ -23,11 +23,10 @@ resultado en cache/diego.csv, que se commitea al repo. Este modulo
 primero intenta la web igual (si algun dia dejan de bloquear, vuelve a
 funcionar solo) y si no puede, lee ese cache.
 
-STOCK VIEJO: si el cache tiene mas de DIAS_STOCK_CONFIABLE dias, los
-productos se publican con stock 0 en lugar de con el stock que diga el
-archivo. Siguen visibles en la tienda y conservan su posicion en Google,
-pero nadie puede comprarlos. Es preferible eso a vender algo que no
-podemos confirmar y despues cancelar el pedido.
+STOCK: se publica siempre el stock que diga el cache, sin importar que
+tan viejo sea. Si quedo viejo solo se avisa en el log. Decision tomada a
+proposito: es mejor vender y cancelar algun pedido suelto que dejar 3.600
+productos sin stock y perder todas las ventas de Diego.
 
 La politica de Diego, confirmada por su gerente de desarrollo: no
 entregan archivo ni API, pero habilitan a cada comercio a armar su propia
@@ -48,7 +47,7 @@ from fuentes.unificar import unificar
 _RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CACHE = os.path.join(_RAIZ, "cache", "diego.csv")
 CACHE_META = os.path.join(_RAIZ, "cache", "diego_meta.json")
-DIAS_STOCK_CONFIABLE = 3
+AVISO_CACHE_VIEJO = 3      # dias: solo para avisar en el log
 
 NOMBRE = "diego"
 MONEDA = "UYU"          # <-- evita la conversion de moneda en combinar.py
@@ -340,22 +339,16 @@ def _desde_cache():
     if not filas:
         raise RuntimeError("Diego: cache/diego.csv esta vacio (se usa el respaldo)")
 
+    # El stock del cache se publica SIEMPRE tal cual, aunque el cache tenga
+    # dias. Es preferible vender y cancelar algun pedido suelto que dejar
+    # 3.600 productos sin stock y perder todas las ventas de Diego.
     edad = _edad_del_cache()
     etiqueta = f"{edad:.1f} dias" if edad is not None else "antiguedad desconocida"
-
-    # Si el cache quedo viejo, no publicamos su stock: lo ponemos todo en 0.
-    # Visible pero no comprable, que es lo unico honesto si no lo podemos
-    # confirmar hoy.
-    if edad is None or edad > DIAS_STOCK_CONFIABLE:
-        tocadas = 0
-        for fila in filas:
-            if fila.get("Title") and fila.get("Variant Inventory Qty") != "0":
-                fila["Variant Inventory Qty"] = "0"
-                tocadas += 1
-        print(f"  diego: cache de {etiqueta}: {tocadas} productos pasan a stock 0 "
-              f"(visibles pero no comprables)")
+    if edad is None or edad > AVISO_CACHE_VIEJO:
+        print(f"  diego: ATENCION, el cache tiene {etiqueta}. Se publica igual, "
+              f"pero conviene correr diego_local.py en la Mac.")
     else:
-        print(f"  diego: cache de {etiqueta}: se publica su stock tal cual")
+        print(f"  diego: cache de {etiqueta}")
 
     publicados = sum(1 for f in filas if f.get("Title"))
     print(f"  diego: {publicados} productos leidos del cache, {len(filas)} filas")
