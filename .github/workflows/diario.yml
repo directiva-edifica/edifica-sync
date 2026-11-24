@@ -10,10 +10,11 @@ name: Sincronizacion diaria Edifica
 # no rompe nada: cada corrida regenera el CSV completo.
 on:
   schedule:
-    - cron: "0 2 * * *"    # 23:00 Uruguay del dia anterior
-    - cron: "0 5 * * *"    # 02:00 Uruguay
-    - cron: "0 8 * * *"    # 05:00 Uruguay
-    - cron: "0 11 * * *"   # 08:00 Uruguay
+    # Cada 3 horas. Con el atraso de GitHub, las corridas quedan repartidas
+    # a lo largo del dia, asi que a cualquier hora el CSV tiene a lo sumo
+    # unas pocas horas de antiguedad y Matrixify siempre importa datos del
+    # mismo dia. El repo es publico: las corridas no cuestan minutos.
+    - cron: "0 */3 * * *"
   workflow_dispatch:        # boton para dispararlo a mano
 
 # Si una corrida se superpone con la anterior, se cancela la vieja: no tiene
