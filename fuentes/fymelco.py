@@ -44,27 +44,31 @@ def detectar_marca(prod):
 
 
 # Categoria de Fymelco -> (Type, subcategoria de Edifica).
+# El material de construccion va con Type "Construccion" porque la
+# tienda ya tiene esa coleccion (regla: Tipo es igual a Construccion).
+# Con Type "Ferreteria" los productos quedarian publicados pero sin
+# ninguna coleccion donde aparecer.
 # El orden importa: se recorre de arriba hacia abajo y gana la primera
 # que el producto tenga, asi "Anafes" le gana a "Electrodomesticos" y
 # "Ondulado y greca" le gana a "Policarbonatos y techos".
 MAPEO = [
     # --- material de construccion ---
-    ("Ondulado y greca",              ("Ferretería", "Policarbonatos")),
-    ("Alveolar",                      ("Ferretería", "Policarbonatos")),
-    ("Compacto y acrílico",           ("Ferretería", "Policarbonatos")),
-    ("Aleros",                        ("Ferretería", "Policarbonatos")),
-    ("Policarbonatos y techos",       ("Ferretería", "Policarbonatos")),
-    ("Perfiles U y T",                ("Ferretería", "Perfiles de Aluminio")),
-    ("Ángulos",                       ("Ferretería", "Perfiles de Aluminio")),
-    ("Planchuelas y terminaciones",   ("Ferretería", "Perfiles de Aluminio")),
-    ("Caños y tubos",                 ("Ferretería", "Perfiles de Aluminio")),
-    ("Perfiles de aluminio",          ("Ferretería", "Perfiles de Aluminio")),
-    ("Mosaicos de vidrio",            ("Ferretería", "Revestimientos")),
-    ("Ladrillos de vidrio",           ("Ferretería", "Revestimientos")),
-    ("Placas de PVC",                 ("Ferretería", "Revestimientos")),
-    ("Revestimientos",                ("Ferretería", "Revestimientos")),
-    ("Kits de instalación",           ("Ferretería", "Ferretería")),
-    ("Accesorios de instalación",     ("Ferretería", "Ferretería")),
+    ("Ondulado y greca",              ("Construcción", "Policarbonatos")),
+    ("Alveolar",                      ("Construcción", "Policarbonatos")),
+    ("Compacto y acrílico",           ("Construcción", "Policarbonatos")),
+    ("Aleros",                        ("Construcción", "Policarbonatos")),
+    ("Policarbonatos y techos",       ("Construcción", "Policarbonatos")),
+    ("Perfiles U y T",                ("Construcción", "Perfiles de Aluminio")),
+    ("Ángulos",                       ("Construcción", "Perfiles de Aluminio")),
+    ("Planchuelas y terminaciones",   ("Construcción", "Perfiles de Aluminio")),
+    ("Caños y tubos",                 ("Construcción", "Perfiles de Aluminio")),
+    ("Perfiles de aluminio",          ("Construcción", "Perfiles de Aluminio")),
+    ("Mosaicos de vidrio",            ("Construcción", "Revestimientos")),
+    ("Ladrillos de vidrio",           ("Construcción", "Revestimientos")),
+    ("Placas de PVC",                 ("Construcción", "Revestimientos")),
+    ("Revestimientos",                ("Construcción", "Revestimientos")),
+    ("Kits de instalación",           ("Construcción", "Ferretería")),
+    ("Accesorios de instalación",     ("Construcción", "Ferretería")),
 
     # --- electrodomesticos ---
     ("Accesorios de hornos y anafes", ("Electro", "Cocinas")),
@@ -118,7 +122,7 @@ MAPEO = [
 
     # --- genericas, van ultimas a proposito ---
     ("Electrodomésticos",             ("Electro", "Otros")),
-    ("Varios",                        ("Ferretería", "Ferretería")),
+    ("Varios",                        ("Construcción", "Ferretería")),
 ]
 
 
