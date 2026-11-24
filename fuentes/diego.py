@@ -11,13 +11,44 @@ los precios se multiplican por la cotizacion y quedan 39 veces mas caros.
 
 MARGEN: los precios de Diego son mayoristas. Se les aplica MARGEN sobre
 el precio publicado antes de subirlos.
+
+DE DONDE SALEN LOS DATOS
+------------------------
+diego.com.uy responde 403 a los servidores de GitHub Actions: rechaza
+rangos de IP de datacenter enteros, tanto que desde ahi ni el robots.txt
+se puede leer. Desde una conexion uruguaya el sitio responde normal.
+
+Por eso la lectura la hace diego_local.py desde la Mac y deja el
+resultado en cache/diego.csv, que se commitea al repo. Este modulo
+primero intenta la web igual (si algun dia dejan de bloquear, vuelve a
+funcionar solo) y si no puede, lee ese cache.
+
+STOCK VIEJO: si el cache tiene mas de DIAS_STOCK_CONFIABLE dias, los
+productos se publican con stock 0 en lugar de con el stock que diga el
+archivo. Siguen visibles en la tienda y conservan su posicion en Google,
+pero nadie puede comprarlos. Es preferible eso a vender algo que no
+podemos confirmar y despues cancelar el pedido.
+
+La politica de Diego, confirmada por su gerente de desarrollo: no
+entregan archivo ni API, pero habilitan a cada comercio a armar su propia
+conexion contra el sitio. Ver diego_local.py.
 """
-import re
+import csv
 import json
+import os
+import re
 import time
-import requests
 from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime, timezone
+
+import requests
 from fuentes.unificar import unificar
+
+# cache/ esta en la raiz del repo, un nivel arriba de fuentes/
+_RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+CACHE = os.path.join(_RAIZ, "cache", "diego.csv")
+CACHE_META = os.path.join(_RAIZ, "cache", "diego_meta.json")
+DIAS_STOCK_CONFIABLE = 3
 
 NOMBRE = "diego"
 MONEDA = "UYU"          # <-- evita la conversion de moneda en combinar.py
@@ -208,7 +239,7 @@ def _ficha(args):
     return None
 
 
-def obtener():
+def _desde_la_web():
     urls = _listar_urls()
     if not urls:
         raise RuntimeError("El sitemap de Diego no devolvio productos")
@@ -283,6 +314,61 @@ def obtener():
 
     return filas, publicados
 
+
+def _edad_del_cache():
+    """Dias desde que se escribio el cache. None si no se sabe."""
+    try:
+        with open(CACHE_META, encoding="utf-8") as f:
+            fecha = json.load(f).get("fecha")
+        d = datetime.fromisoformat(fecha)
+        if d.tzinfo is None:
+            d = d.replace(tzinfo=timezone.utc)
+        return (datetime.now(timezone.utc) - d).total_seconds() / 86400
+    except Exception:
+        return None
+
+
+def _desde_cache():
+    """Lee cache/diego.csv, que deja diego_local.py corriendo en la Mac."""
+    if not os.path.exists(CACHE):
+        raise RuntimeError(
+            "Diego: la web no responde y no hay cache/diego.csv. "
+            "Hay que correr diego_local.py en la Mac (se usa el respaldo).")
+
+    with open(CACHE, newline="", encoding="utf-8") as f:
+        filas = [{c: (r.get(c) or "") for c in COLS} for r in csv.DictReader(f)]
+    if not filas:
+        raise RuntimeError("Diego: cache/diego.csv esta vacio (se usa el respaldo)")
+
+    edad = _edad_del_cache()
+    etiqueta = f"{edad:.1f} dias" if edad is not None else "antiguedad desconocida"
+
+    # Si el cache quedo viejo, no publicamos su stock: lo ponemos todo en 0.
+    # Visible pero no comprable, que es lo unico honesto si no lo podemos
+    # confirmar hoy.
+    if edad is None or edad > DIAS_STOCK_CONFIABLE:
+        tocadas = 0
+        for fila in filas:
+            if fila.get("Title") and fila.get("Variant Inventory Qty") != "0":
+                fila["Variant Inventory Qty"] = "0"
+                tocadas += 1
+        print(f"  diego: cache de {etiqueta}: {tocadas} productos pasan a stock 0 "
+              f"(visibles pero no comprables)")
+    else:
+        print(f"  diego: cache de {etiqueta}: se publica su stock tal cual")
+
+    publicados = sum(1 for f in filas if f.get("Title"))
+    print(f"  diego: {publicados} productos leidos del cache, {len(filas)} filas")
+    return filas, publicados
+
+
+def obtener():
+    """Intenta la web; si esta bloqueada, cae al cache de la Mac."""
+    try:
+        return _desde_la_web()
+    except Exception as e:
+        print(f"  diego: no se pudo leer la web ({type(e).__name__}: {str(e)[:70]})")
+        return _desde_cache()
 
 if __name__ == "__main__":
     f, n = obtener()
