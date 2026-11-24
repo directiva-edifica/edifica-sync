@@ -1,9 +1,26 @@
 name: Sincronizacion diaria Edifica
 
+# GitHub posterga los workflows programados cuando tiene carga: con un solo
+# cron a las 11:50 UTC, las corridas de noviembre arrancaron entre las 17:18
+# y las 22:55 UTC (atraso promedio 7,6 h, pico 11 h). El CSV quedaba listo a
+# la tarde/noche y Matrixify lo importaba a las 4 AM del dia siguiente, asi
+# que la tienda mostraba el stock del dia anterior.
+# Por eso ahora se programan varios horarios de madrugada: con el atraso
+# habitual, al menos uno cae temprano en la manana uruguaya. Correrlo de mas
+# no rompe nada: cada corrida regenera el CSV completo.
 on:
   schedule:
-    - cron: "50 11 * * *"   # PRUEBA: 8:50 Uruguay
+    - cron: "0 2 * * *"    # 23:00 Uruguay del dia anterior
+    - cron: "0 5 * * *"    # 02:00 Uruguay
+    - cron: "0 8 * * *"    # 05:00 Uruguay
+    - cron: "0 11 * * *"   # 08:00 Uruguay
   workflow_dispatch:        # boton para dispararlo a mano
+
+# Si una corrida se superpone con la anterior, se cancela la vieja: no tiene
+# sentido tener dos escribiendo el mismo CSV.
+concurrency:
+  group: sync-edifica
+  cancel-in-progress: true
 
 permissions:
   contents: write
@@ -25,6 +42,17 @@ jobs:
 
       - name: Generar el mega-CSV
         run: python combinar.py
+        env:
+          PYTHONUNBUFFERED: "1"   # para ver el avance en vivo en el log
+
+      # El CSV queda descargable aunque despues falle el push al repositorio.
+      - name: Publicar el CSV como archivo descargable
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: edifica_todos
+          path: edifica_todos.csv
+          retention-days: 14
 
       - name: Guardar el CSV en el repositorio
         run: |
@@ -32,5 +60,10 @@ jobs:
           git config user.email "bot@edifica.uy"
           git add edifica_todos.csv respaldos/*.csv
           git commit -m "Actualizacion automatica $(date -u +'%Y-%m-%d %H:%M UTC')" || echo "Sin cambios"
-          git pull --rebase --autostash
-          git push
+          for intento in 1 2 3 4 5; do
+            git pull --rebase --autostash && git push && echo "PUSH OK" && exit 0
+            echo "El push fallo (intento $intento). Reintento en 30s..."
+            sleep 30
+          done
+          echo "El push fallo 5 veces. El CSV quedo igual como archivo descargable."
+          exit 1
